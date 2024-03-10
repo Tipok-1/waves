@@ -1,7 +1,7 @@
-import React from "react"
+import TreeScene from "./modules/TreeScene"
 
 function App() {
-	return <div></div>
+	return <TreeScene />
 }
 
 export default App
