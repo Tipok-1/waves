@@ -38,4 +38,5 @@ body,html,#root{
 }
 body {
   background: #303035;
+  overflow-x: hidden;
 }
