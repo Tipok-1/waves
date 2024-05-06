@@ -1,7 +1,7 @@
-import Wave from "../Wave/Wave"
+import WaveWithSettings from "../Wave/WaveWrapper"
 
 const Waves = () => {
-	return <Wave />
+	return <WaveWithSettings />
 }
 
 export default Waves

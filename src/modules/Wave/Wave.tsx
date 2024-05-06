@@ -1,7 +1,8 @@
-import { FC, useState, useRef } from "react"
-import { MODEL_SIZE, STEP_BETWEEN_VECTORS } from "../../utils/consts"
+import { FC, useState, useRef, useEffect } from "react"
 import { useSpring } from "@react-spring/web"
 import { Line } from "@react-three/drei"
+import { useGlobalControls } from "../../store/globalControls"
+import type { IWaveSettings } from "../../hooks/useWaveControls"
 
 enum EPolarizationType {
 	CIRCULAR = "circular",
@@ -10,8 +11,9 @@ enum EPolarizationType {
 }
 interface IWave {
 	polarizationType?: EPolarizationType
+	settings: IWaveSettings
 }
-enum EFieldType {
+export enum EFieldType {
 	ELECTRIC = "ELECTRIC",
 	MAGNETIC = "MAGNETIC"
 }
@@ -21,33 +23,8 @@ interface IVectorProps {
 	X0?: number
 	Y0?: number
 	field?: EFieldType
+	settings: IWaveSettings
 }
-
-interface IWaveSettings {
-	amplitude: number
-	period: number
-	speed: number
-	initialPhaseX: number
-	initialPhaseY: number
-}
-const waveSettings: Record<EFieldType, IWaveSettings> = {
-	MAGNETIC: {
-		period: MODEL_SIZE / 2,
-		speed: 1,
-		amplitude: MODEL_SIZE / 4,
-		initialPhaseX: Math.PI / 2,
-		initialPhaseY: Math.PI
-	},
-	ELECTRIC: {
-		period: MODEL_SIZE / 2,
-		speed: 1,
-		amplitude: MODEL_SIZE / 4,
-		initialPhaseX: 1.5 * Math.PI,
-		initialPhaseY: 2 * Math.PI
-	}
-}
-
-const ANIMATION_SPEED = 10
 
 interface IVector {
 	startPoint: [number, number, number]
@@ -56,17 +33,18 @@ interface IVector {
 type renderVectorFn = (props: IVectorProps) => IVector
 
 const renderVector: renderVectorFn = ({
-	field = EFieldType.ELECTRIC,
+	//field = EFieldType.ELECTRIC,
+	settings,
 	time,
 	Z
 }) => {
 	let tensionX = null
 	let tensionY = null
-	const amplitude = waveSettings[field].amplitude //Амплитуда волны
-	const initialPhaseX = waveSettings[field].initialPhaseX //Начальная фаза x
-	const initialPhaseY = waveSettings[field].initialPhaseY //Начальная фаза y
-	const speed = waveSettings[field].speed // Скорость распространения волны
-	const period = waveSettings[field].period // Период волны
+	const amplitude = settings.amplitude //Амплитуда волны
+	const initialPhaseX = settings.initialPhaseX //Начальная фаза x
+	const initialPhaseY = settings.initialPhaseY //Начальная фаза y
+	const speed = settings.speed // Скорость распространения волны
+	const period = settings.period // Период волны
 
 	const wavelength = speed * period //Длина волны
 	const w = (2 * Math.PI) / period //Круговая частота
@@ -80,31 +58,36 @@ const renderVector: renderVectorFn = ({
 
 	let θ_Y = Math.atan(tensionX / tensionY) // Угол наклона от оси Y
 
-	const endX = tensionX //* Math.cos(θ_X) //Конечная координата X вектора напряжённости
+	const endX = tensionX //Конечная координата X вектора напряжённости
 	const endY = tensionY * Math.cos(θ_Y) //Конечная координата Y вектора напряжённости
-	if (endY === 0) console.log(endY)
 	return {
 		startPoint: [0, 0, Z],
 		endPoint: [endX, endY, Z]
 	}
 }
 
-const animate = (time: number) => {
+const animate = (
+	time: number,
+	stepBetweenVectors: number,
+	settings: IWaveSettings
+) => {
+	const modelSize = useGlobalControls.getState().modelSize
 	const allVectorsE: IVector[] = []
 	const allVectorsH: IVector[] = []
-	for (let Z = -MODEL_SIZE; Z < MODEL_SIZE; Z += STEP_BETWEEN_VECTORS) {
-		const obj = { time: +time.toFixed(3), Z, field: EFieldType.ELECTRIC }
+	for (let Z = -modelSize; Z < modelSize; Z += stepBetweenVectors) {
+		const obj = { time: +time.toFixed(3), Z, settings: settings } //field: EFieldType.ELECTRIC }
 		const coords = renderVector(obj)
+
 		allVectorsE.push(coords)
+
 		const coords2 = renderVector({
 			time: +time.toFixed(3),
 			Z,
-			field: EFieldType.MAGNETIC
+			settings: settings
+			//field: EFieldType.MAGNETIC
 		})
 		allVectorsH.push(coords2)
 	}
-	console.log(allVectorsH)
-
 	return { allVectorsE, allVectorsH }
 }
 
@@ -112,42 +95,60 @@ export interface IVectors {
 	allVectorsE: IVector[]
 	allVectorsH: IVector[]
 }
-const Wave: FC<IWave> = () => {
+const Wave: FC<IWave> = ({ settings }) => {
+	const stepBetweenVectors = useGlobalControls(
+		state => state.stepBetweenVectors
+	)
+	const animationDuration = useGlobalControls(state => state.animationDuration)
+	const animationStarted = useGlobalControls(state => state.animationStarted)
 	const lastTime = useRef<number | null>(null)
 	const [allVectors, setAllVectors] = useState<IVectors>({
 		allVectorsE: [],
 		allVectorsH: []
 	})
-	useSpring({
-		time: 100,
-		from: { time: 0 },
-		config: { duration: ANIMATION_SPEED * 1000 },
-		loop: true,
-		onChange: ({ value: { time } }) => {
-			if (lastTime.current === null || Math.trunc(time) !== lastTime.current) {
-				const vectors = animate(time)
-				console.log(time)
-				setAllVectors(vectors)
-				lastTime.current = Math.trunc(time)
+	const [, api] = useSpring(
+		() => ({
+			time: 500,
+			from: { time: 0 },
+			config: { duration: animationDuration * 1000 },
+			loop: true,
+			reset: true,
+			onChange: ({ value: { time } }) => {
+				if (
+					lastTime.current === null ||
+					Math.trunc(time) !== lastTime.current
+				) {
+					const vectors = animate(time, stepBetweenVectors, settings)
+					setAllVectors(vectors)
+					lastTime.current = Math.trunc(time)
+				}
 			}
-		}
-	})
+		}),
+		[stepBetweenVectors, animationDuration, settings]
+	)
+
+	useEffect(() => {
+		if (!animationStarted) api.pause()
+		else api.resume()
+	}, [animationStarted, api])
+	//api.stop()
+
 	if (!allVectors.allVectorsE.length && !allVectors.allVectorsH.length)
 		return null
 	return (
 		<group>
 			<Line
 				points={allVectors.allVectorsE.flatMap(vector => Object.values(vector))}
-				color={"yellow"}
+				color={settings.colorE}
 				lineWidth={2}
 				segments
 			/>
-			<Line
+			{/* <Line
 				points={allVectors.allVectorsH.flatMap(vector => Object.values(vector))}
-				color={"blue"}
+				color={settings.settingsH.color}
 				lineWidth={2}
 				segments
-			/>
+			/> */}
 		</group>
 	)
 }
