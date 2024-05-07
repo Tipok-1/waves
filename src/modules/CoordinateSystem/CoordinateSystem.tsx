@@ -33,72 +33,7 @@ const AxesPlane: FC<IAxesPlane> = ({ direction, size, color, position }) => {
 }
 
 const CoordinateSystem = () => {
-	const { scene } = useThree()
 	const modelSize = useGlobalControls(state => state.modelSize)
-	// useEffect(() => {
-	// 	const arrowPos = new THREE.Vector3(0, 0, 0)
-	// 	scene.add(
-	// 		new THREE.ArrowHelper(
-	// 			new THREE.Vector3(1, 0, 0),
-	// 			arrowPos,
-	// 			modelSize / 4,
-	// 			"#E79FD2",
-	// 			1,
-	// 			1
-	// 		)
-	// 	)
-	// 	scene.add(
-	// 		new THREE.ArrowHelper(
-	// 			new THREE.Vector3(0, 1, 0),
-	// 			arrowPos,
-	// 			modelSize / 4,
-	// 			"#80ffdb",
-	// 			1,
-	// 			1
-	// 		)
-	// 	)
-	// 	scene.add(
-	// 		new THREE.ArrowHelper(
-	// 			new THREE.Vector3(0, 0, 1),
-	// 			arrowPos,
-	// 			modelSize,
-	// 			"#318CE7",
-	// 			1,
-	// 			1
-	// 		)
-	// 	)
-
-	// 	scene.add(
-	// 		new THREE.ArrowHelper(
-	// 			new THREE.Vector3(-1, 0, 0),
-	// 			arrowPos,
-	// 			modelSize / 4,
-	// 			"#E79FD2",
-	// 			0,
-	// 			0
-	// 		)
-	// 	)
-	// 	scene.add(
-	// 		new THREE.ArrowHelper(
-	// 			new THREE.Vector3(0, -1, 0),
-	// 			arrowPos,
-	// 			modelSize / 4,
-	// 			"#80ffdb",
-	// 			0,
-	// 			0
-	// 		)
-	// 	)
-	// 	scene.add(
-	// 		new THREE.ArrowHelper(
-	// 			new THREE.Vector3(0, 0, -1),
-	// 			arrowPos,
-	// 			modelSize,
-	// 			"#318CE7",
-	// 			0,
-	// 			0
-	// 		)
-	// 	)
-	// }, [scene, modelSize])
 	return (
 		<>
 			<Text3D
