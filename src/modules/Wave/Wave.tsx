@@ -5,13 +5,9 @@ import { useGlobalControls } from "../../store/globalControls"
 import type { IWaveSettings } from "../../hooks/useWaveControls"
 import WaveProjection from "./WaveProjection"
 
-enum EPolarizationType {
-	CIRCULAR = "circular",
-	ELLIPTICAL = "elliptical",
-	LINEAR = "linear"
-}
+export type TSides = "left" | "right"
 interface IWave {
-	polarizationType?: EPolarizationType
+	side?: TSides
 	settings: IWaveSettings
 }
 export enum EFieldType {
@@ -44,7 +40,7 @@ const renderVector: renderVectorFn = ({
 	let tensionY = null
 	const amplitude = settings.amplitude //Амплитуда волны
 	const initialPhaseX = settings.initialPhaseX //Начальная фаза x
-	const initialPhaseY = settings.initialPhaseY * 0.5 //Начальная фаза y
+	const initialPhaseY = settings.initialPhaseY //Начальная фаза y
 	const speed = settings.speed // Скорость распространения волны
 	const period = settings.period // Период волны
 
@@ -78,12 +74,15 @@ const renderVector: renderVectorFn = ({
 const animate = (
 	time: number,
 	stepBetweenVectors: number,
-	settings: IWaveSettings
+	settings: IWaveSettings,
+	side?: TSides
 ) => {
 	const modelSize = useGlobalControls.getState().modelSize
 	const allVectorsE: IVector[] = []
 	const allVectorsH: IVector[] = []
-	for (let Z = -modelSize; Z < modelSize; Z += stepBetweenVectors) {
+	const min = side && side === "right" ? 0 : -modelSize
+	const max = side && side === "left" ? 0 : modelSize
+	for (let Z = min; Z < max; Z += stepBetweenVectors) {
 		const obj = { time: +time.toFixed(3), Z, settings: settings }
 		const coords = renderVector(obj)
 
@@ -104,7 +103,7 @@ export interface IVectors {
 	allVectorsE: IVector[]
 	allVectorsH: IVector[]
 }
-const Wave: FC<IWave> = ({ settings }) => {
+const Wave: FC<IWave> = ({ side, settings }) => {
 	const stepBetweenVectors = useGlobalControls(
 		state => state.stepBetweenVectors
 	)
@@ -128,7 +127,7 @@ const Wave: FC<IWave> = ({ settings }) => {
 					lastTime.current === null ||
 					Math.trunc(time) !== lastTime.current
 				) {
-					const vectors = animate(time, stepBetweenVectors, settings)
+					const vectors = animate(time, stepBetweenVectors, settings, side)
 					setAllVectors(vectors)
 					lastTime.current = Math.trunc(time)
 				}
@@ -150,7 +149,7 @@ const Wave: FC<IWave> = ({ settings }) => {
 	} | null>(null)
 
 	useEffect(() => {
-		const vectors = animate(0, stepBetweenVectors, settings)
+		const vectors = animate(0, stepBetweenVectors, settings, side)
 		const pathE = vectors.allVectorsE.slice(0, settings.period * 1.5)
 		const pathH = vectors.allVectorsH.slice(0, settings.period * 1.5)
 		const pathes = {
@@ -175,13 +174,16 @@ const Wave: FC<IWave> = ({ settings }) => {
 		settings.initialPhaseY,
 		settings.amplitude,
 		settings.period,
-		stepBetweenVectors
+		stepBetweenVectors,
+		side
 	])
 	if (!allVectors.allVectorsE.length && !allVectors.allVectorsH.length)
 		return null
 	return (
 		<group>
-			<WaveProjection pathE={wavePath?.pathEEnd} pathH={wavePath?.pathHEnd} />
+			{(side === "left" || !side) && (
+				<WaveProjection pathE={wavePath?.pathEEnd} pathH={wavePath?.pathHEnd} />
+			)}
 			<Line
 				points={allVectors.allVectorsE.flatMap(vector => Object.values(vector))}
 				color={settings.colorE}
@@ -194,10 +196,12 @@ const Wave: FC<IWave> = ({ settings }) => {
 				lineWidth={2}
 				segments
 			/>
-			<WaveProjection
-				pathE={wavePath?.pathEStart}
-				pathH={wavePath?.pathHStart}
-			/>
+			{(side === "right" || !side) && (
+				<WaveProjection
+					pathE={wavePath?.pathEStart}
+					pathH={wavePath?.pathHStart}
+				/>
+			)}
 		</group>
 	)
 }

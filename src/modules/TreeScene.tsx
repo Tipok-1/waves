@@ -26,7 +26,7 @@ const TreeScene = () => {
 	return (
 		<Canvas
 			camera={{
-				position: [modelSize + 30, 0, 0],
+				position: [-modelSize - 30, 0, 0],
 				far: 2000
 			}}
 		>

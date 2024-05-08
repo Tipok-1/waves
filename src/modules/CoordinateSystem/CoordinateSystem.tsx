@@ -1,8 +1,8 @@
-import { useEffect, FC } from "react"
-import { useThree } from "@react-three/fiber"
+import { FC } from "react"
 import { Text3D, Plane } from "@react-three/drei"
 import * as THREE from "three"
 import { useGlobalControls } from "../../store/globalControls"
+import Filters from "../Filters/Filters"
 
 enum EAxesPlaneDirection {
 	XY = "XY",
@@ -72,6 +72,7 @@ const CoordinateSystem = () => {
 				position={[0, 0, modelSize]}
 				color="#6E7F80"
 			/>
+			<Filters />
 			<arrowHelper
 				args={[
 					new THREE.Vector3(1, 0, 0),

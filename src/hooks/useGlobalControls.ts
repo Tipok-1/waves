@@ -1,8 +1,12 @@
 import { useGlobalControls } from "../store/globalControls"
 import { useDebounce } from "./useDebounce"
-import { folder, useControls } from "leva"
+import { folder, useControls, buttonGroup } from "leva"
+import { useFilters } from "../store/filters"
 
 const dictionary = {
+	circular: "Круговой",
+	linear: "Линейный",
+	remove: "X",
 	projection: "Проекция волны на плоскость XY"
 }
 
@@ -50,6 +54,7 @@ export function useGlobalControlsHook() {
 		100
 	)
 
+	const setCurrentFilter = useFilters(state => state.setCurrentFilter)
 	const controls = {
 		modelSize: {
 			title: "World",
@@ -78,7 +83,7 @@ export function useGlobalControlsHook() {
 		},
 		[dictionary.projection]: folder({
 			color: {
-				value: "#ff6000",
+				value: "#ff004d",
 				label: "Цвет",
 				onChange: color => debounceChangeProjectionColor(color)
 			},
@@ -88,13 +93,21 @@ export function useGlobalControlsHook() {
 				onChange: visible => debounceChangeProjectionVisible(visible)
 			},
 			lineWidth: {
-				value: 6,
+				value: 4,
 				min: 1,
 				max: 10,
 				step: 1,
 				label: "Ширина линии",
 				onChange: (lineWidth: number) =>
 					debounceChangeProjectionLineWidth(lineWidth)
+			}
+		}),
+		filters: buttonGroup({
+			label: "Фильтры",
+			opts: {
+				[dictionary.circular]: () => setCurrentFilter("circular"),
+				[dictionary.linear]: () => setCurrentFilter("linear"),
+				[dictionary.remove]: () => setCurrentFilter(null)
 			}
 		})
 	}
