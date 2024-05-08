@@ -13,7 +13,6 @@ const WaveProjection: FC<IWaveProjection> = ({ pathE, pathH }) => {
 		state => state.projectionLineWidth
 	)
 	const projectionVisible = useGlobalControls(state => state.projectionVisible)
-	console.log("render path")
 	if (!projectionVisible) return null
 	return (
 		<>

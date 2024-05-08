@@ -32,11 +32,11 @@ export const useGlobalControls = create<IGlobalControls>()(
 			setAnimationStarted: animationStarted => set({ animationStarted }),
 
 			//Projections
-			projectionColor: "#ff6000",
+			projectionColor: "#ff004d",
 			setProjectionColor: projectionColor => set({ projectionColor }),
 			projectionVisible: true,
 			setProjectionVisible: projectionVisible => set({ projectionVisible }),
-			projectionLineWidth: 6,
+			projectionLineWidth: 4,
 			setProjectionLineWidth: projectionLineWidth =>
 				set({ projectionLineWidth })
 		}),

@@ -1,4 +1,4 @@
-import { useRef } from "react"
+import { useState } from "react"
 import { folder, useControls } from "leva"
 import { useDebounce } from "../hooks/useDebounce"
 import { useGlobalControls } from "../store/globalControls"
@@ -33,7 +33,7 @@ const dictionary = {
 }
 export function useWaveControls(props: IWaveControls) {
 	const modelSize = useGlobalControls(state => state.modelSize)
-	const defaultSettings = useRef<IWaveSettings>({
+	const [settings, setSettings] = useState({
 		colorE: "yellow",
 		colorH: "blue",
 		period: modelSize / 2,
@@ -45,25 +45,32 @@ export function useWaveControls(props: IWaveControls) {
 
 	const debounceChangeColor = useDebounce((color: string, type: EFieldType) => {
 		if (type === EFieldType.ELECTRIC) {
-			defaultSettings.current.colorE = color
+			setSettings(state => ({ ...state, colorE: color }))
 		} else {
-			defaultSettings.current.colorH = color
+			setSettings(state => ({ ...state, colorH: color }))
 		}
 	}, 500)
 	const debounceChangePhase = useDebounce(
 		(value: number, phaseType: "X" | "Y") => {
 			if (phaseType === "X") {
-				defaultSettings.current.initialPhaseX = (value * Math.PI) / 180
+				setSettings(state => ({
+					...state,
+					initialPhaseX: (value * Math.PI) / 180
+				}))
 			} else {
-				defaultSettings.current.initialPhaseY = (value * Math.PI) / 180
+				setSettings(state => ({
+					...state,
+					initialPhaseY: (value * Math.PI) / 180
+				}))
 			}
 		},
 		500
 	)
 	const debounceChangeSimpleValues = useDebounce(
 		(value: number, type: TSimpleSettings) => {
-			if (type === "amplitude") defaultSettings.current.amplitude = value
-			if (type === "period") defaultSettings.current.period = value
+			if (type === "amplitude")
+				setSettings(state => ({ ...state, amplitude: value }))
+			if (type === "period") setSettings(state => ({ ...state, period: value }))
 		},
 		500
 	)
@@ -115,9 +122,9 @@ export function useWaveControls(props: IWaveControls) {
 	)
 
 	useEffect(() => {
-		if (defaultSettings.current.amplitude > modelSize / 4) {
+		if (settings.amplitude > modelSize / 4) {
 			debounceChangeSimpleValues(modelSize / 4, "amplitude")
 		}
-	}, [modelSize, debounceChangeSimpleValues])
-	return defaultSettings.current
+	}, [modelSize, debounceChangeSimpleValues, settings.amplitude])
+	return settings
 }
