@@ -33,6 +33,7 @@ const dictionary = {
 }
 export function useWaveControls(props: IWaveControls) {
 	const modelSize = useGlobalControls(state => state.modelSize)
+	const nonPolarized = useGlobalControls(state => state.nonPolarized)
 	const [settings, setSettings] = useState({
 		colorE: "yellow",
 		colorH: "blue",
@@ -91,14 +92,16 @@ export function useWaveControls(props: IWaveControls) {
 						min: -360,
 						max: 360,
 						step: 1,
-						onChange: phase => debounceChangePhase(phase, "X")
+						onChange: phase => debounceChangePhase(phase, "X"),
+						disabled: nonPolarized
 					},
 					[dictionary.initialPhaseY]: {
 						value: 0,
 						min: -360,
 						max: 360,
 						step: 1,
-						onChange: phase => debounceChangePhase(phase, "Y")
+						onChange: phase => debounceChangePhase(phase, "Y"),
+						disabled: nonPolarized
 					}
 				}),
 				[dictionary.amplitude]: {
@@ -118,7 +121,7 @@ export function useWaveControls(props: IWaveControls) {
 				}
 			})
 		},
-		[modelSize]
+		[modelSize, nonPolarized]
 	)
 
 	useEffect(() => {

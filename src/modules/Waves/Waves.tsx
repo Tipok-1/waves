@@ -3,10 +3,12 @@ import { useFilters } from "../../store/filters"
 import Wave from "../Wave/Wave"
 import { useWaveControls } from "../../hooks/useWaveControls"
 import type { IWaveSettings } from "../../hooks/useWaveControls"
+import { useGlobalControls } from "../../store/globalControls"
 
 const getRotationDirection = (xPhase: number, yPhase: number) =>
 	xPhase > yPhase ? true : false
 const Waves = () => {
+	const nonPolarized = useGlobalControls(state => state.nonPolarized)
 	const currentFilter = useFilters(state => state.currentFilter)
 	const settings = useWaveControls({
 		waveName: "Волна"
@@ -42,18 +44,17 @@ const Waves = () => {
 		}
 	}, [settings, currentFilter])
 	const renderWaveWithFilter = () => {
-		console.log(fixedPhase)
 		if (currentFilter === "circular") {
 			return (
 				<>
-					<Wave settings={settings} side="left" />
+					<Wave settings={settings} isNonPolarized={nonPolarized} side="left" />
 					<Wave settings={fixedPhase} side="right" />
 				</>
 			)
 		} else if (currentFilter === "linear") {
 			return (
 				<>
-					<Wave settings={settings} side="left" />
+					<Wave settings={settings} isNonPolarized={nonPolarized} side="left" />
 					<Wave settings={fixedPhase} side="right" />
 				</>
 			)
@@ -63,7 +64,9 @@ const Waves = () => {
 	}
 	return (
 		<>
-			{!currentFilter && <Wave settings={settings} />}
+			{!currentFilter && (
+				<Wave isNonPolarized={nonPolarized} settings={settings} />
+			)}
 			{currentFilter && renderWaveWithFilter()}
 		</>
 	)

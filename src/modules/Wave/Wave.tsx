@@ -4,11 +4,13 @@ import { Line } from "@react-three/drei"
 import { useGlobalControls } from "../../store/globalControls"
 import type { IWaveSettings } from "../../hooks/useWaveControls"
 import WaveProjection from "./WaveProjection"
+import { getRandomValue } from "./helpers"
 
 export type TSides = "left" | "right"
 interface IWave {
 	side?: TSides
 	settings: IWaveSettings
+	isNonPolarized?: boolean
 }
 export enum EFieldType {
 	ELECTRIC = "ELECTRIC",
@@ -17,8 +19,6 @@ export enum EFieldType {
 interface IVectorProps {
 	time: number
 	Z: number
-	X0?: number
-	Y0?: number
 	field?: EFieldType
 	settings: IWaveSettings
 }
@@ -75,23 +75,35 @@ const animate = (
 	time: number,
 	stepBetweenVectors: number,
 	settings: IWaveSettings,
-	side?: TSides
+	side?: TSides,
+	isNonPolarized?: boolean
 ) => {
 	const modelSize = useGlobalControls.getState().modelSize
 	const allVectorsE: IVector[] = []
 	const allVectorsH: IVector[] = []
 	const min = side && side === "right" ? 0 : -modelSize
 	const max = side && side === "left" ? 0 : modelSize
+
+	let vectorsSettings = settings
+	const roundedTime = +time.toFixed(3)
 	for (let Z = min; Z < max; Z += stepBetweenVectors) {
-		const obj = { time: +time.toFixed(3), Z, settings: settings }
+		if (isNonPolarized) {
+			vectorsSettings = {
+				...settings,
+				amplitude: getRandomValue(1, settings.amplitude),
+				initialPhaseX: (getRandomValue(-360, 360) * Math.PI) / 180,
+				initialPhaseY: (getRandomValue(-360, 360) * Math.PI) / 180
+			}
+		}
+		const obj = { time: roundedTime, Z, settings: vectorsSettings }
 		const coords = renderVector(obj)
 
 		allVectorsE.push(coords)
 
 		const coords2 = renderVector({
-			time: +time.toFixed(3),
+			time: roundedTime,
 			Z,
-			settings: settings,
+			settings: vectorsSettings,
 			field: EFieldType.MAGNETIC
 		})
 		allVectorsH.push(coords2)
@@ -103,7 +115,7 @@ export interface IVectors {
 	allVectorsE: IVector[]
 	allVectorsH: IVector[]
 }
-const Wave: FC<IWave> = ({ side, settings }) => {
+const Wave: FC<IWave> = ({ side, settings, isNonPolarized = false }) => {
 	const stepBetweenVectors = useGlobalControls(
 		state => state.stepBetweenVectors
 	)
@@ -119,7 +131,7 @@ const Wave: FC<IWave> = ({ side, settings }) => {
 		() => ({
 			time: 500,
 			from: { time: 0 },
-			config: { duration: animationDuration * 1000 },
+			config: { duration: animationDuration * 1000 * (isNonPolarized ? 5 : 1) },
 			loop: true,
 			reset: true,
 			onChange: ({ value: { time } }) => {
@@ -127,13 +139,19 @@ const Wave: FC<IWave> = ({ side, settings }) => {
 					lastTime.current === null ||
 					Math.trunc(time) !== lastTime.current
 				) {
-					const vectors = animate(time, stepBetweenVectors, settings, side)
+					const vectors = animate(
+						time,
+						stepBetweenVectors,
+						settings,
+						side,
+						isNonPolarized
+					)
 					setAllVectors(vectors)
 					lastTime.current = Math.trunc(time)
 				}
 			}
 		}),
-		[stepBetweenVectors, animationDuration, settings]
+		[stepBetweenVectors, animationDuration, settings, isNonPolarized]
 	)
 
 	useEffect(() => {
@@ -149,9 +167,11 @@ const Wave: FC<IWave> = ({ side, settings }) => {
 	} | null>(null)
 
 	useEffect(() => {
+		//Отрисовываем проекцию на ось XY
+		if (isNonPolarized) return
 		const vectors = animate(0, stepBetweenVectors, settings, side)
-		const pathE = vectors.allVectorsE.slice(0, settings.period * 1.5)
-		const pathH = vectors.allVectorsH.slice(0, settings.period * 1.5)
+		const pathE = vectors.allVectorsE
+		const pathH = vectors.allVectorsH
 		const pathes = {
 			pathEStart: pathE.map(
 				el => [el.endPoint[0], el.endPoint[1], modelSize] as TDots
@@ -175,13 +195,14 @@ const Wave: FC<IWave> = ({ side, settings }) => {
 		settings.amplitude,
 		settings.period,
 		stepBetweenVectors,
+		isNonPolarized,
 		side
 	])
 	if (!allVectors.allVectorsE.length && !allVectors.allVectorsH.length)
 		return null
 	return (
 		<group>
-			{(side === "left" || !side) && (
+			{(side === "left" || !side) && !isNonPolarized && (
 				<WaveProjection pathE={wavePath?.pathEEnd} pathH={wavePath?.pathHEnd} />
 			)}
 			<Line
@@ -196,7 +217,7 @@ const Wave: FC<IWave> = ({ side, settings }) => {
 				lineWidth={2}
 				segments
 			/>
-			{(side === "right" || !side) && (
+			{(side === "right" || !side) && !isNonPolarized && (
 				<WaveProjection
 					pathE={wavePath?.pathEStart}
 					pathH={wavePath?.pathHStart}
