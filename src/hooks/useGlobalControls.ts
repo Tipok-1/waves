@@ -27,6 +27,7 @@ export function useGlobalControlsHook() {
 	const setProjectionVisible = useGlobalControls(
 		state => state.setProjectionVisible
 	)
+	const setNonPolarized = useGlobalControls(state => state.setNonPolarized)
 
 	const debounceChangeModelSize = useDebounce(
 		(size: number) => setModelSize(size),
@@ -51,6 +52,10 @@ export function useGlobalControlsHook() {
 
 	const debounceChangeProjectionVisible = useDebounce(
 		(visible: boolean) => setProjectionVisible(visible),
+		100
+	)
+	const debounceNonPolarized = useDebounce(
+		(visible: boolean) => setNonPolarized(visible),
 		100
 	)
 
@@ -81,6 +86,19 @@ export function useGlobalControlsHook() {
 			onChange: (duration: number) => debounceChangeAnimationDuration(duration),
 			label: "Продолжительность анимации"
 		},
+		filters: buttonGroup({
+			label: "Фильтры",
+			opts: {
+				[dictionary.circular]: () => setCurrentFilter("circular"),
+				[dictionary.linear]: () => setCurrentFilter("linear"),
+				[dictionary.remove]: () => setCurrentFilter(null)
+			}
+		}),
+		nonPolarized: {
+			label: "Неполяризованнная волна",
+			value: true,
+			onChange: (nonPolarized: boolean) => debounceNonPolarized(nonPolarized)
+		},
 		[dictionary.projection]: folder({
 			color: {
 				value: "#ff004d",
@@ -100,14 +118,6 @@ export function useGlobalControlsHook() {
 				label: "Ширина линии",
 				onChange: (lineWidth: number) =>
 					debounceChangeProjectionLineWidth(lineWidth)
-			}
-		}),
-		filters: buttonGroup({
-			label: "Фильтры",
-			opts: {
-				[dictionary.circular]: () => setCurrentFilter("circular"),
-				[dictionary.linear]: () => setCurrentFilter("linear"),
-				[dictionary.remove]: () => setCurrentFilter(null)
 			}
 		})
 	}

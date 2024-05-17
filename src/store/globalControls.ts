@@ -10,6 +10,8 @@ interface IGlobalControls {
 	setAnimationDuration: (duration: number) => void
 	animationStarted: boolean
 	setAnimationStarted: (started: boolean) => void
+	nonPolarized: boolean
+	setNonPolarized: (nonPolarized: boolean) => void
 
 	//Projections
 	projectionColor: string
@@ -30,6 +32,8 @@ export const useGlobalControls = create<IGlobalControls>()(
 			setAnimationDuration: animationDuration => set({ animationDuration }),
 			animationStarted: true,
 			setAnimationStarted: animationStarted => set({ animationStarted }),
+			nonPolarized: true,
+			setNonPolarized: nonPolarized => set({ nonPolarized }),
 
 			//Projections
 			projectionColor: "#ff004d",
