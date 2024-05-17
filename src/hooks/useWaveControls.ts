@@ -3,6 +3,17 @@ import { folder, useControls } from "leva"
 import { useDebounce } from "../hooks/useDebounce"
 import { useGlobalControls } from "../store/globalControls"
 import { useEffect } from "react"
+import {
+	COLOR_E_DEFAULT,
+	COLOR_H_DEFAULT,
+	SPEED_DEFAULT,
+	PHASE_X_DEFAULT,
+	PHASE_Y_DEFAULT,
+	PHASE_MAX,
+	PHASE_MIN,
+	AMPLITUDE_MIN,
+	PERIOD_MIN
+} from "../utils/consts"
 
 export interface IWaveSettings {
 	amplitude: number
@@ -35,13 +46,13 @@ export function useWaveControls(props: IWaveControls) {
 	const modelSize = useGlobalControls(state => state.modelSize)
 	const nonPolarized = useGlobalControls(state => state.nonPolarized)
 	const [settings, setSettings] = useState({
-		colorE: "yellow",
-		colorH: "blue",
+		colorE: COLOR_E_DEFAULT,
+		colorH: COLOR_H_DEFAULT,
 		period: modelSize / 2,
-		speed: 1,
+		speed: SPEED_DEFAULT,
 		amplitude: modelSize / 4,
-		initialPhaseX: 0,
-		initialPhaseY: 0
+		initialPhaseX: PHASE_X_DEFAULT,
+		initialPhaseY: PHASE_Y_DEFAULT
 	})
 
 	const debounceChangeColor = useDebounce((color: string, type: EFieldType) => {
@@ -50,7 +61,7 @@ export function useWaveControls(props: IWaveControls) {
 		} else {
 			setSettings(state => ({ ...state, colorH: color }))
 		}
-	}, 500)
+	}, 300)
 	const debounceChangePhase = useDebounce(
 		(value: number, phaseType: "X" | "Y") => {
 			if (phaseType === "X") {
@@ -65,7 +76,7 @@ export function useWaveControls(props: IWaveControls) {
 				}))
 			}
 		},
-		500
+		300
 	)
 	const debounceChangeSimpleValues = useDebounce(
 		(value: number, type: TSimpleSettings) => {
@@ -73,32 +84,32 @@ export function useWaveControls(props: IWaveControls) {
 				setSettings(state => ({ ...state, amplitude: value }))
 			if (type === "period") setSettings(state => ({ ...state, period: value }))
 		},
-		500
+		300
 	)
 	useControls(
 		{
 			[props.waveName]: folder({
 				[dictionary.E]: {
-					value: "yellow",
+					value: COLOR_E_DEFAULT,
 					onChange: color => debounceChangeColor(color, EFieldType.ELECTRIC)
 				},
 				[dictionary.H]: {
-					value: "blue",
+					value: COLOR_H_DEFAULT,
 					onChange: color => debounceChangeColor(color, EFieldType.MAGNETIC)
 				},
 				[dictionary.phaseDifference]: folder({
 					[dictionary.initialPhaseX]: {
-						value: 0,
-						min: -360,
-						max: 360,
+						value: PHASE_X_DEFAULT,
+						min: PHASE_MIN,
+						max: PHASE_MAX,
 						step: 1,
 						onChange: phase => debounceChangePhase(phase, "X"),
 						disabled: nonPolarized
 					},
 					[dictionary.initialPhaseY]: {
-						value: 0,
-						min: -360,
-						max: 360,
+						value: PHASE_Y_DEFAULT,
+						min: PHASE_MIN,
+						max: PHASE_MAX,
 						step: 1,
 						onChange: phase => debounceChangePhase(phase, "Y"),
 						disabled: nonPolarized
@@ -106,7 +117,7 @@ export function useWaveControls(props: IWaveControls) {
 				}),
 				[dictionary.amplitude]: {
 					value: modelSize / 4,
-					min: 1,
+					min: AMPLITUDE_MIN,
 					max: modelSize / 4,
 					step: 1,
 					onChange: amplitude =>
@@ -114,7 +125,7 @@ export function useWaveControls(props: IWaveControls) {
 				},
 				[dictionary.period]: {
 					value: modelSize / 2,
-					min: 10,
+					min: PERIOD_MIN,
 					max: modelSize * 2,
 					step: 1,
 					onChange: period => debounceChangeSimpleValues(period, "period")

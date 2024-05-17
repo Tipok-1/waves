@@ -1,5 +1,15 @@
 import { create } from "zustand"
 import { devtools } from "zustand/middleware"
+import {
+	MODEL_SIZE_DEFAULT,
+	STEP_BETWEEN_VECTORS_DEFAULT,
+	ANIMATION_DURATION_DEFAULT,
+	NON_POLARIZED_DEFAULT,
+	PROJECTION_COLOR_DEFAULT,
+	PROJECTION_LINE_DEFAULT,
+	PROJECTION_VISIBLE_DEFAULT,
+	ANIMATION_STARTED_DEFAULT
+} from "../utils/consts"
 
 interface IGlobalControls {
 	modelSize: number
@@ -24,23 +34,23 @@ interface IGlobalControls {
 export const useGlobalControls = create<IGlobalControls>()(
 	devtools(
 		set => ({
-			modelSize: 100,
-			stepBetweenVectors: 1,
+			modelSize: MODEL_SIZE_DEFAULT,
+			stepBetweenVectors: STEP_BETWEEN_VECTORS_DEFAULT,
 			setModelSize: modelSize => set({ modelSize }),
 			setStepBetweenVectors: stepBetweenVectors => set({ stepBetweenVectors }),
-			animationDuration: 10,
+			animationDuration: ANIMATION_DURATION_DEFAULT,
 			setAnimationDuration: animationDuration => set({ animationDuration }),
-			animationStarted: true,
+			animationStarted: ANIMATION_STARTED_DEFAULT,
 			setAnimationStarted: animationStarted => set({ animationStarted }),
-			nonPolarized: true,
+			nonPolarized: NON_POLARIZED_DEFAULT,
 			setNonPolarized: nonPolarized => set({ nonPolarized }),
 
 			//Projections
-			projectionColor: "#ff004d",
+			projectionColor: PROJECTION_COLOR_DEFAULT,
 			setProjectionColor: projectionColor => set({ projectionColor }),
-			projectionVisible: true,
+			projectionVisible: PROJECTION_VISIBLE_DEFAULT,
 			setProjectionVisible: projectionVisible => set({ projectionVisible }),
-			projectionLineWidth: 4,
+			projectionLineWidth: PROJECTION_LINE_DEFAULT,
 			setProjectionLineWidth: projectionLineWidth =>
 				set({ projectionLineWidth })
 		}),
