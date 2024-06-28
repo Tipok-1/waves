@@ -3,6 +3,7 @@ import { Text3D, Plane } from "@react-three/drei"
 import * as THREE from "three"
 import { useGlobalControls } from "../../store/globalControls"
 import Filters from "../Filters/Filters"
+import font from "./font.json"
 
 enum EAxesPlaneDirection {
 	XY = "XY",
@@ -36,27 +37,15 @@ const CoordinateSystem = () => {
 	const modelSize = useGlobalControls(state => state.modelSize)
 	return (
 		<>
-			<Text3D
-				font="./fonts/font.json"
-				position={[modelSize / 4 + 2, 0, 0]}
-				size={1}
-			>
+			<Text3D font={font as any} position={[modelSize / 4 + 2, 0, 0]} size={1}>
 				X
 				<meshMatcapMaterial color="#E79FD2" />
 			</Text3D>
-			<Text3D
-				font="./fonts/font.json"
-				position={[0, modelSize / 4 + 2, 0]}
-				size={1}
-			>
+			<Text3D font={font as any} position={[0, modelSize / 4 + 2, 0]} size={1}>
 				Y
 				<meshMatcapMaterial color="#80ffdb" />
 			</Text3D>
-			<Text3D
-				font="./fonts/font.json"
-				position={[0, 0, modelSize + 2]}
-				size={1}
-			>
+			<Text3D font={font as any} position={[0, 0, modelSize + 2]} size={1}>
 				Z
 				<meshMatcapMaterial color="#318CE7" />
 			</Text3D>

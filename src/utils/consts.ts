@@ -12,7 +12,7 @@ export const ANIMATION_DURATION_MAX = 50
 
 export const NON_POLARIZED_DEFAULT = false
 
-export const PROJECTION_COLOR_DEFAULT = "#ff0000"
+export const PROJECTION_COLOR_DEFAULT = "#03ff5e"
 export const PROJECTION_VISIBLE_DEFAULT = false
 export const PROJECTION_LINE_MIN = 1
 export const PROJECTION_LINE_DEFAULT = 3
